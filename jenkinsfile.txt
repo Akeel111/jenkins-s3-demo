@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_DEFAULT_REGION = 'us-east-1'
+        S3_BUCKET = 'my-jenkins-demo-bucket1'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Upload to S3') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'aws-s3-creds',
+                    usernameVariable: 'AWS_ACCESS_KEY_ID',
+                    passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                )]) {
+                    bat 'aws s3 sync . s3://%S3_BUCKET% --exclude ".git/*"'
+                }
+            }
+        }
+    }
+}
